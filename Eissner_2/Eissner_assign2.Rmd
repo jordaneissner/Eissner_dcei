@@ -26,22 +26,18 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r data, echo=FALSE}
 
-tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
-precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
-
-na_thresh <- 18 # remove station data if it has more than a threshold of NA values
-
+DataMatrix <- function(data,na_thresh){
 # make list of all names, lats, and lons
-n <- unique(tempdat[,c('name','lat','lon')])
+n <- unique(data[,c('name','lat','lon')])
 namelist <- n$name
 latlist <- n$lat
 lonlist <- n$lon
-yearlist <- unique(tempdat$year)
+yearlist <- unique(data$year)
 colnames(n) <- c('name', 'lat', 'lon')
-print(n)
 
 # put data into a matrix with each location as a row and each year as a column
-m <- matrix(data=tempdat$data, nrow = length(namelist), ncol = length(yearlist), byrow=TRUE)
+m <- matrix(data=data$data, nrow = length(namelist), ncol = length(yearlist), byrow=TRUE)
+
 rownames(m) <- namelist
 colnames(m) <- yearlist
 
@@ -51,45 +47,73 @@ r <- cbind(n,m)
 delete.na <- function(DF, a=0) {
   DF[rowSums(is.na(DF)) <= a,]
 }
-new_tempdat <- delete.na(r, na_thresh)
-temponly <- delete.na(m, na_thresh)
-new_namelist <- new_tempdat$name
-new_latlist <- new_tempdat$lat
-new_lonlist <- new_tempdat$lon
+new_dat <- delete.na(r, na_thresh)
+dat_only <- delete.na(m, na_thresh)
+new_namelist <- new_dat$name
+new_latlist <- new_dat$lat
+new_lonlist <- new_dat$lon
 
+return(dat_only)
+}
 ```
 
 
 ```{r trend, echo=FALSE}
-tm <- t(temponly)
-trend <- c()
-for(i in 1:length(new_namelist)){
-  lm <- lm(yearlist ~ tm[,i])
+Trend <- function(data) {
+  print(data)
+  yearlist <- colnames(data)
+  namelist <- rownames(data)
   
-  coeff <- lm$coefficients[2]
-  trend <- c(trend,coeff)
+  tm <- t(data)
+  trend <- c()
+  for(i in 1:length(namelist)){
+    lm <- lm(yearlist ~ tm[,i])
+    coeff <- lm$coefficients[2]
+    trend <- c(trend,coeff)
+  }
+  return(trend)
 }
 
 ```
 
-```{r mapprop, echo+FALSE}
-rbPal <- colorRampPalette(c('red','yellow','blue'))
-trend$Col <- rbPal(10)[as.numeric(cut(trend,breaks=10))]
-
-```
 
 ```{r maps, echo=FALSE}
- library(maps)
- library(graphics)
- library(mapproj)
-
-map("usa", fill=FALSE, plot=TRUE)
-points(new_lonlist, new_latlist, col = trend$Col, pch =19, cex = .6)
-#legend("bottomleft", legend=c("Pos","Neg"), col=trend$Col, fill=trend$Col)
-
-
+Map <- function(trend){ #, lonlist, latlist){
+  rbPal <- colorRampPalette(c('red','yellow','blue'))
+  trend$Col <- rbPal(10)[as.numeric(cut(trend,breaks=10))]
+  
+  map("usa", fill=FALSE, plot=TRUE)
+  points(new_lonlist, new_latlist, col = trend$Col, pch =19, cex = .6)
+  #legend("bottomleft", legend=c("Pos","Neg"), col=trend$Col, fill=trend$Col)
+}
  
 ```
+
+```{r usefuncs, echo=FALSE}
+library(maps)
+library(graphics)
+library(mapproj)
+
+tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
+precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
+
+na_thresh <- 18 # remove station data if it has more than a threshold of NA values
+
+new_data <- DataMatrix(tempdat,na_thresh)
+
+trend_data <- Trend(new_data)
+
+Map(trend_data)
+
+# datasets <- c(tempdat, precdat)
+# for (set in datasets){
+#   new_data <- DataMatrix(set, na_thresh)
+#   trend_data <- Trend(new_data)
+#   Map(trend_data)
+# }
+
+```
+
 
 ### Results
 

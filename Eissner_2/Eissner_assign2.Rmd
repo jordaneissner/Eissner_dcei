@@ -1,0 +1,105 @@
+---
+title: "Eissner_assign2"
+author: "Jordan Eissner"
+date: "March 14, 2018"
+output: html_document
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+### Abstract
+
+
+
+
+
+### Introduction
+
+
+
+### Methods
+
+```{r data, echo=FALSE}
+
+tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
+precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
+
+na_thresh <- 18 # remove station data if it has more than a threshold of NA values
+
+# make list of all names, lats, and lons
+n <- unique(tempdat[,c('name','lat','lon')])
+namelist <- n$name
+latlist <- n$lat
+lonlist <- n$lon
+yearlist <- unique(tempdat$year)
+colnames(n) <- c('name', 'lat', 'lon')
+print(n)
+
+# put data into a matrix with each location as a row and each year as a column
+m <- matrix(data=tempdat$data, nrow = length(namelist), ncol = length(yearlist), byrow=TRUE)
+rownames(m) <- namelist
+colnames(m) <- yearlist
+
+r <- cbind(n,m)
+
+# delete rows with more than threshold NA values
+delete.na <- function(DF, a=0) {
+  DF[rowSums(is.na(DF)) <= a,]
+}
+new_tempdat <- delete.na(r, na_thresh)
+temponly <- delete.na(m, na_thresh)
+new_namelist <- new_tempdat$name
+new_latlist <- new_tempdat$lat
+new_lonlist <- new_tempdat$lon
+
+```
+
+
+```{r trend, echo=FALSE}
+tm <- t(temponly)
+trend <- c()
+for(i in 1:length(new_namelist)){
+  lm <- lm(yearlist ~ tm[,i])
+  
+  coeff <- lm$coefficients[2]
+  trend <- c(trend,coeff)
+}
+
+```
+
+```{r mapprop, echo+FALSE}
+rbPal <- colorRampPalette(c('red','yellow','blue'))
+trend$Col <- rbPal(10)[as.numeric(cut(trend,breaks=10))]
+
+```
+
+```{r maps, echo=FALSE}
+ library(maps)
+ library(graphics)
+ library(mapproj)
+
+map("usa", fill=FALSE, plot=TRUE)
+points(new_lonlist, new_latlist, col = trend$Col, pch =19, cex = .6)
+#legend("bottomleft", legend=c("Pos","Neg"), col=trend$Col, fill=trend$Col)
+
+
+ 
+```
+
+### Results
+
+
+
+### Discussion
+
+
+
+### References 
+
+
+

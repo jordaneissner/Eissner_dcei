@@ -28,11 +28,11 @@ knitr::opts_chunk$set(echo = TRUE)
 
 DataMatrix <- function(data,na_thresh){
 # make list of all names, lats, and lons
-n <- unique(data[,c('name','lat','lon')])
-namelist <- n$name
-latlist <- n$lat
-lonlist <- n$lon
-yearlist <- unique(data$year)
+n <- distinct(tempdat, tempdat$name, tempdat$lon, tempdat$lat)
+namelist <- n$`tempdat$name`
+latlist <- n$`tempdat$lat`
+lonlist <- n$`tempdat$lon`
+yearlist <- unique(tempdat$year)
 colnames(n) <- c('name', 'lat', 'lon')
 
 # put data into a matrix with each location as a row and each year as a column
@@ -53,14 +53,13 @@ new_namelist <- new_dat$name
 new_latlist <- new_dat$lat
 new_lonlist <- new_dat$lon
 
-return(dat_only)
+return(list(dat_only=dat_only, latlist=new_latlist, lonlist=new_lonlist))
 }
 ```
 
 
 ```{r trend, echo=FALSE}
 Trend <- function(data) {
-  print(data)
   yearlist <- colnames(data)
   namelist <- rownames(data)
   
@@ -78,12 +77,12 @@ Trend <- function(data) {
 
 
 ```{r maps, echo=FALSE}
-Map <- function(trend){ #, lonlist, latlist){
+Map <- function(trend, lonlist, latlist){
   rbPal <- colorRampPalette(c('red','yellow','blue'))
   trend$Col <- rbPal(10)[as.numeric(cut(trend,breaks=10))]
   
   map("usa", fill=FALSE, plot=TRUE)
-  points(new_lonlist, new_latlist, col = trend$Col, pch =19, cex = .6)
+  points(lonlist, latlist, col = trend$Col, pch =19, cex = .6)
   #legend("bottomleft", legend=c("Pos","Neg"), col=trend$Col, fill=trend$Col)
 }
  
@@ -93,21 +92,24 @@ Map <- function(trend){ #, lonlist, latlist){
 library(maps)
 library(graphics)
 library(mapproj)
+library(dplyr)
 
 tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
 precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
 
 na_thresh <- 18 # remove station data if it has more than a threshold of NA values
 
-new_data <- DataMatrix(tempdat,na_thresh)
+new_data <- DataMatrix(tempdat,na_thresh)$dat_only
+latlist <- DataMatrix(tempdat,na_thresh)$latlist
+lonlist <- DataMatrix(tempdat,na_thresh)$lonlist
 
 trend_data <- Trend(new_data)
 
-Map(trend_data)
+Map(trend_data, latlist, lonlist)
 
 # datasets <- c(tempdat, precdat)
-# for (set in datasets){
-#   new_data <- DataMatrix(set, na_thresh)
+# for (i in 1:length(datasets)) {
+#   new_data <- DataMatrix(datasets[i], na_thresh)
 #   trend_data <- Trend(new_data)
 #   Map(trend_data)
 # }

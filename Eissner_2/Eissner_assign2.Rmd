@@ -28,12 +28,13 @@ knitr::opts_chunk$set(echo = TRUE)
 
 DataMatrix <- function(data,na_thresh){
 # make list of all names, lats, and lons
-n <- distinct(tempdat, tempdat$name, tempdat$lon, tempdat$lat)
-namelist <- n$`tempdat$name`
-latlist <- n$`tempdat$lat`
-lonlist <- n$`tempdat$lon`
-yearlist <- unique(tempdat$year)
+n <- distinct(data[,c('name','lat','lon')])
+namelist <- n$name
+latlist <- n$lat
+lonlist <- n$lon
+yearlist <- unique(data$year)
 colnames(n) <- c('name', 'lat', 'lon')
+
 
 # put data into a matrix with each location as a row and each year as a column
 m <- matrix(data=data$data, nrow = length(namelist), ncol = length(yearlist), byrow=TRUE)
@@ -68,8 +69,11 @@ Trend <- function(data) {
   for(i in 1:length(namelist)){
     lm <- lm(yearlist ~ tm[,i])
     coeff <- lm$coefficients[2]
+    #numyears <- length(tm[,i][!is.na(tm[,i])])
+    #coeff2 <- coeff/numyears
     trend <- c(trend,coeff)
   }
+  
   return(trend)
 }
 
@@ -94,10 +98,24 @@ library(graphics)
 library(mapproj)
 library(dplyr)
 
+# provided <- TRUE
+# if(provided<-TRUE){
+#   tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
+#   precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
+#   tempdat2 <- readRDS("USAannualTemp1950_2016.rds")
+# } 
+# else{
+#   
+# }
+
+
 tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
 precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
+tempdat2 <- readRDS("USAannualTemp1950_2016.rds")
+
 
 na_thresh <- 18 # remove station data if it has more than a threshold of NA values
+
 
 new_data <- DataMatrix(tempdat,na_thresh)$dat_only
 latlist <- DataMatrix(tempdat,na_thresh)$latlist
@@ -107,7 +125,7 @@ trend_data <- Trend(new_data)
 
 Map(trend_data, latlist, lonlist)
 
-# datasets <- c(tempdat, precdat)
+# datasets <- c(tempdat, tempdat2, precdat)
 # for (i in 1:length(datasets)) {
 #   new_data <- DataMatrix(datasets[i], na_thresh)
 #   trend_data <- Trend(new_data)

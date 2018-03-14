@@ -22,13 +22,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-### Methods
+### Data and Methods
+
+In this study, mean annual temperature and precipitation data from thousands of stations across the U.S were analyzed. The data from each station consisted of 59 values, ranging from 1950 to 2008, or in some cases, 2010. For some years in some stations, there was no data available. For each station, if there was less than 40 years of data available, the station was removed. With the remaining data, a time series linear model was made with the data at each station. The trend in the data was determined to be the slope of that time series. Each location's trend was then plotted on a map, with different colors corresponding to different values. A blue color represents a negative trend while a red color represents a positive trend. Maps of both temperature and precipitation were made. 
 
 ```{r data, echo=FALSE}
 
 DataMatrix <- function(data,na_thresh){
 # make list of all names, lats, and lons
-n <- distinct(data[,c('name','lat','lon')])
+n <- unique(data [,c("name","lon","lat")])
 namelist <- n$name
 latlist <- n$lat
 lonlist <- n$lon
@@ -54,6 +56,7 @@ new_namelist <- new_dat$name
 new_latlist <- new_dat$lat
 new_lonlist <- new_dat$lon
 
+
 return(list(dat_only=dat_only, latlist=new_latlist, lonlist=new_lonlist))
 }
 ```
@@ -69,8 +72,6 @@ Trend <- function(data) {
   for(i in 1:length(namelist)){
     lm <- lm(yearlist ~ tm[,i])
     coeff <- lm$coefficients[2]
-    #numyears <- length(tm[,i][!is.na(tm[,i])])
-    #coeff2 <- coeff/numyears
     trend <- c(trend,coeff)
   }
   
@@ -79,14 +80,21 @@ Trend <- function(data) {
 
 ```
 
+### Results
+The trends are plotted for temperature and precipitation in figure 1. The temperature plot shows mostly warming (positive) trends for much of the United States. There are several locations that show a cooling (negative) trend, which are mostly located on the West Coast, in California. There are also some cooling trends on the East Coast, in Florida, and New York. The southern states also seem to have larger warming trends than states in the north.
+
+
+The precipitation trend plot shows that there is an increase in precipitation for the majority of the stations. The only negative trends are found in eastern Ohio. The trends in Alabama and Tennessee are larger than those in Ohio, which correspond to larger, positive trends in temperature. 
+
 
 ```{r maps, echo=FALSE}
 Map <- function(trend, lonlist, latlist){
+  
   rbPal <- colorRampPalette(c('red','yellow','blue'))
-  trend$Col <- rbPal(10)[as.numeric(cut(trend,breaks=10))]
+  Cols <- rbPal(10)[as.numeric(cut(trend,breaks=10))]
   
   map("usa", fill=FALSE, plot=TRUE)
-  points(lonlist, latlist, col = trend$Col, pch =19, cex = .6)
+  points(lonlist, latlist, col = Cols, pch =19, cex = .6)
   #legend("bottomleft", legend=c("Pos","Neg"), col=trend$Col, fill=trend$Col)
 }
  
@@ -96,7 +104,7 @@ Map <- function(trend, lonlist, latlist){
 library(maps)
 library(graphics)
 library(mapproj)
-library(dplyr)
+
 
 # provided <- TRUE
 # if(provided<-TRUE){
@@ -117,25 +125,27 @@ tempdat2 <- readRDS("USAannualTemp1950_2016.rds")
 na_thresh <- 18 # remove station data if it has more than a threshold of NA values
 
 
-new_data <- DataMatrix(tempdat,na_thresh)$dat_only
-latlist <- DataMatrix(tempdat,na_thresh)$latlist
-lonlist <- DataMatrix(tempdat,na_thresh)$lonlist
+datasets <- list(tempdat, precdat)
+
+for (datasets in datasets){
+  i <- get("datasets")
+  #print(i['name'])
+
+
+new_data <- DataMatrix(i,na_thresh)$dat_only
+latlist <- DataMatrix(i,na_thresh)$latlist
+lonlist <- DataMatrix(i,na_thresh)$lonlist
 
 trend_data <- Trend(new_data)
 
 Map(trend_data, latlist, lonlist)
+}
 
-# datasets <- c(tempdat, tempdat2, precdat)
-# for (i in 1:length(datasets)) {
-#   new_data <- DataMatrix(datasets[i], na_thresh)
-#   trend_data <- Trend(new_data)
-#   Map(trend_data)
-# }
+
 
 ```
 
 
-### Results
 
 
 

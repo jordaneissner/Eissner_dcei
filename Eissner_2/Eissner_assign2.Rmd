@@ -1,9 +1,9 @@
 ---
 title: "Eissner_assign2"
 author: "Jordan Eissner"
-date: "March 14, 2018"
+date: "March 16, 2018"
 output: html_document
-
+bibliography: Eissner_2_ref.xml
 ---
 
 ```{r setup, include=FALSE}
@@ -19,7 +19,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 ### Introduction
-
+The purpose of this paper is to view the effects of climate change by assessing trends in temperature and precipitation across the United States.  
 
 
 ### Data and Methods
@@ -81,7 +81,7 @@ Trend <- function(data) {
 ```
 
 ### Results
-The trends are plotted for temperature and precipitation in figure 1. The temperature plot shows mostly warming (positive) trends for much of the United States. There are several locations that show a cooling (negative) trend, which are mostly located on the West Coast, in California. There are also some cooling trends on the East Coast, in Florida, and New York. The southern states also seem to have larger warming trends than states in the north.
+The trends are plotted for temperature and precipitation in figures 1 and 2, respectively. The temperature plot shows mostly warming (positive) trends for much of the United States. There are several locations that show a cooling (negative) trend, which are mostly located on the West Coast, in California. There are also some cooling trends on the East Coast, in Florida and Massachusetts. The southern states also seem to have larger warming trends than states in the north.
 
 
 The precipitation trend plot shows that there is an increase in precipitation for the majority of the stations. The only negative trends are found in eastern Ohio. The trends in Alabama and Tennessee are larger than those in Ohio, which correspond to larger, positive trends in temperature. 
@@ -95,62 +95,66 @@ Map <- function(trend, lonlist, latlist){
   
   map("usa", fill=FALSE, plot=TRUE)
   points(lonlist, latlist, col = Cols, pch =19, cex = .6)
-  #legend("bottomleft", legend=c("Pos","Neg"), col=trend$Col, fill=trend$Col)
+  
 }
  
 ```
 
-```{r usefuncs, echo=FALSE}
+```{r usefuncs, echo=FALSE, fig.cap=c("Figure 1: US temperature trends 1950-2008; red = positive, blue = negative","Figure 2: AL, OH, TN precipitation trends 1950-2008; red = positive, blue = negative"), warning=FALSE}
 library(maps)
 library(graphics)
 library(mapproj)
+library(captioner)
 
 
-# provided <- TRUE
-# if(provided<-TRUE){
-#   tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
-#   precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
-#   tempdat2 <- readRDS("USAannualTemp1950_2016.rds")
-# } 
-# else{
-#   
-# }
-
-
-tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
-precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
-tempdat2 <- readRDS("USAannualTemp1950_2016.rds")
+provided <- TRUE
+if(provided<-TRUE){
+  tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
+  precdat <- readRDS("USAAnnualPcpn1950_2008.rds")
+  tempdat2 <- readRDS("USAannualTemp1950_2016.rds")
+}else{
+  source("get_online_data_temp.R")
+  tempdat <- temp
+  source("get_online_data_precip.R")
+  precipdat <- precip
+}
 
 
 na_thresh <- 18 # remove station data if it has more than a threshold of NA values
 
-
 datasets <- list(tempdat, precdat)
+titles <- list("1950-2008 Temperature Trends", "1950-2008 Precipitation Trends")
 
-for (datasets in datasets){
-  i <- get("datasets")
-  #print(i['name'])
+analyze <- function(datasets, titles) {
+  for (f in seq_along(datasets)) {
+    fdata <- datasets[f]
+    fdata = data.frame(fdata)
+    new_data <- DataMatrix(fdata, na_thresh)$dat_only
+    latlist <- DataMatrix(fdata,na_thresh)$latlist
+    lonlist <- DataMatrix(fdata,na_thresh)$lonlist
 
-
-new_data <- DataMatrix(i,na_thresh)$dat_only
-latlist <- DataMatrix(i,na_thresh)$latlist
-lonlist <- DataMatrix(i,na_thresh)$lonlist
-
-trend_data <- Trend(new_data)
-
-Map(trend_data, latlist, lonlist)
+    trend_data <- Trend(new_data)
+    
+    if (f == 1) {
+      Map(trend_data, latlist, lonlist)
+      title(titles[f])
+    } else {
+      Map(trend_data, latlist, lonlist)
+      title(titles[f])
+    }
+  }
 }
 
-
+analyze(datasets, titles)
 
 ```
 
 
-
-
-
 ### Discussion
 
+The results of the trend tests in the plots show that the majority of the United States has been warming since 1950. This could be seen as evidence of global warming, due to the large positive trends throughout a large area. The warming can likely be explained by the increased amount of Greenhouse Gases (GHGs) that have been put in the atmosphere since 1950, which trap outgoing infrared radiation and act as blanket on the surface. Though most of the country has experience a lot of warming, there are some parts of the country that have experienced cooling. Some of these areas include California, the deset southwest, Pacific northwest, and Florida. Many of these locations border an ocean. Lebassi et. al. states that there are several hypotheses as to why this is occuring [-@Lebassi2009]. One of these is that the inland warming causes decreased pressure compared to the increased pressure associated with upwelling in the ocean. This pattern results in a flow coming from the sea to the land, which would allow for cooler temperatures to advect to coastal regions, keeping their temperatures moderated, and in some cases, cooler. Another reason could be global circulations patterns, like the Pacific Decadal Oscillation (PDO) or El Nino Southern Oscillation (ENSO).
+
+Not only are there temperature impacts due to increased GHGs, there are also precipitation impacts. By analyzing the precipitation data and trends from 1950 to 2008, some linkage between precipitation and GHGs/temperature can be seen. There are a few explanations for this also. Increased GHGs result in an increased amount of cloud condensation nuclei (CCN), which leads to an increased amount of water droplets that are able to precipitate out of the cloud [@Twomey1977]. In addition, higher air temperatures can hold more moisture, so more water is able to be held in the atmosphere, and then precipitated out. The states shown in this analysis appear to agree with this hypothesis, but since only three states are analyzed, more data from different states are needed to fully explain and understand the impacts of climate change on precipitation. 
 
 
 ### References 

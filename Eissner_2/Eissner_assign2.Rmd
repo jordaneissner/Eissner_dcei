@@ -1,8 +1,8 @@
 ---
 title: "Eissner_assign2"
 author: "Jordan Eissner"
-date: "March 16, 2018"
-output: html_document
+date: "March 15, 2018"
+output: pdf_document
 bibliography: Eissner_2_ref.xml
 ---
 
@@ -10,23 +10,24 @@ bibliography: Eissner_2_ref.xml
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-
-
 ### Abstract
+Due to the increase in greenhouse gases (GHGs) released into the atmosphere, the earth is warming. This effect can be seen by analyzing temperature records. Since 1950, the temperature trend throughout most of the United States, especially inland regions, is positive. However, coastal regions seem to actually be cooling, probably due to coastal upwelling and sea breezes. The warming is also associated with increased precipitation, which can be seen in the precipitation trends of data stations in Ohio, Tennessee, and Alabama. There is evidence of a possible correlation between temperature and precipitation, but more data is needed.   
 
 
+### 1. Introduction
+The purpose of this paper is to view the effects of climate change by assessing trends in temperature and precipitation across the United States. Section 2 will discuss the data and methods used in this study, section 3 will show and explain the results, and section 4 will give a brief discussion of the meaning of the results. 
 
 
-
-### Introduction
-The purpose of this paper is to view the effects of climate change by assessing trends in temperature and precipitation across the United States.  
-
-
-### Data and Methods
+### 2. Data and Methods
 
 In this study, mean annual temperature and precipitation data from thousands of stations across the U.S were analyzed. The data from each station consisted of 59 values, ranging from 1950 to 2008, or in some cases, 2010. For some years in some stations, there was no data available. For each station, if there was less than 40 years of data available, the station was removed. With the remaining data, a time series linear model was made with the data at each station. The trend in the data was determined to be the slope of that time series. Each location's trend was then plotted on a map, with different colors corresponding to different values. A blue color represents a negative trend while a red color represents a positive trend. Maps of both temperature and precipitation were made. 
 
 ```{r data, echo=FALSE}
+
+## Modularity 1: Before writing out all of my code in an RMarkdown document, I planned it out on paper and wrote psuedocode. This helped me not have to trouble shoot as much when I started using the computer, and I was more organized. 
+
+## Modularity 2: I made functions to make my code easier to follow, and more efficient, without having to copy and paste several sections of code. 
+
 
 DataMatrix <- function(data,na_thresh){
 # make list of all names, lats, and lons
@@ -80,7 +81,7 @@ Trend <- function(data) {
 
 ```
 
-### Results
+### 3. Results
 The trends are plotted for temperature and precipitation in figures 1 and 2, respectively. The temperature plot shows mostly warming (positive) trends for much of the United States. There are several locations that show a cooling (negative) trend, which are mostly located on the West Coast, in California. There are also some cooling trends on the East Coast, in Florida and Massachusetts. The southern states also seem to have larger warming trends than states in the north.
 
 
@@ -107,6 +108,8 @@ library(mapproj)
 library(captioner)
 
 
+## Modularity 3: I used Terry's external script (with modifications) to read in online data, which helped to make my code cleaner and shorter.
+
 provided <- TRUE
 if(provided<-TRUE){
   tempdat <- readRDS("USAAnnualTemp1950_2008.rds")
@@ -119,9 +122,11 @@ if(provided<-TRUE){
   precipdat <- precip
 }
 
+## Modularity 4: I made the majority of the constants variables. This helps for reproducibility and is easy to change if data/requirements change. 
+
+## Modularity 5: I did not copy my code from the temperature analysis to do the precipitation analysis. The functions and for-loops will help to make my code easier to run and modify if more variables become available. They just have to be added to a list in order to be analyzed. 
 
 na_thresh <- 18 # remove station data if it has more than a threshold of NA values
-
 datasets <- list(tempdat, precdat)
 titles <- list("1950-2008 Temperature Trends", "1950-2008 Precipitation Trends")
 
@@ -147,12 +152,14 @@ analyze <- function(datasets, titles) {
 
 analyze(datasets, titles)
 
+## Modularity 6: I do not have dependencies on other variables from other chunks. All variables used are input from the functions. This helps to stay organized and not get confused which variables are being used where. 
+
 ```
 
 
-### Discussion
+### 4. Discussion
 
-The results of the trend tests in the plots show that the majority of the United States has been warming since 1950. This could be seen as evidence of global warming, due to the large positive trends throughout a large area. The warming can likely be explained by the increased amount of Greenhouse Gases (GHGs) that have been put in the atmosphere since 1950, which trap outgoing infrared radiation and act as blanket on the surface. Though most of the country has experience a lot of warming, there are some parts of the country that have experienced cooling. Some of these areas include California, the deset southwest, Pacific northwest, and Florida. Many of these locations border an ocean. Lebassi et. al. states that there are several hypotheses as to why this is occuring [-@Lebassi2009]. One of these is that the inland warming causes decreased pressure compared to the increased pressure associated with upwelling in the ocean. This pattern results in a flow coming from the sea to the land, which would allow for cooler temperatures to advect to coastal regions, keeping their temperatures moderated, and in some cases, cooler. Another reason could be global circulations patterns, like the Pacific Decadal Oscillation (PDO) or El Nino Southern Oscillation (ENSO).
+The results of the trend tests in the plots show that the majority of the United States has been warming since 1950. This could be seen as evidence of global warming, due to the large positive trends throughout a large area. The warming can likely be explained by the increased amount of Greenhouse Gases (GHGs) that have been put in the atmosphere since 1950, which trap outgoing infrared radiation and act as blanket on the surface. Though most of the country has experienced a lot of warming, there are some parts of the country that have experienced cooling. Some of these areas include California, the desert southwest, Pacific northwest, and Florida. Many of these locations border an ocean. Lebassi et. al. states that there are several hypotheses as to why this is occuring [-@Lebassi2009]. One of these is that the inland warming causes decreased pressure compared to the increased pressure associated with upwelling in the ocean. This pattern results in a flow coming from the sea to the land, which would allow for cooler temperatures to advect to coastal regions, keeping their temperatures moderated, and in some cases, cooler. Another reason could be global circulations patterns, like the Pacific Decadal Oscillation (PDO) or El Nino Southern Oscillation (ENSO).
 
 Not only are there temperature impacts due to increased GHGs, there are also precipitation impacts. By analyzing the precipitation data and trends from 1950 to 2008, some linkage between precipitation and GHGs/temperature can be seen. There are a few explanations for this also. Increased GHGs result in an increased amount of cloud condensation nuclei (CCN), which leads to an increased amount of water droplets that are able to precipitate out of the cloud [@Twomey1977]. In addition, higher air temperatures can hold more moisture, so more water is able to be held in the atmosphere, and then precipitated out. The states shown in this analysis appear to agree with this hypothesis, but since only three states are analyzed, more data from different states are needed to fully explain and understand the impacts of climate change on precipitation. 
 

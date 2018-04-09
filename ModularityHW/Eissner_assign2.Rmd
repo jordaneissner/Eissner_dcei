@@ -6,6 +6,14 @@ output: pdf_document
 bibliography: Eissner_2_ref.xml
 ---
 
+<!--**DAN: Find my comments by searching for "***DAN:"-->
+
+<!--**DAN: Great job using git, you have plenty of commits with sensible commit messages. You mentioned in your email upon submission that something got messed up and you thought I would not be able to see your commits, but I could see quite a few using gitk, so not sure what happened. Usually commits do not get destroyed unless one sets out to destry them (and then it is hard).-->
+
+<!--**DAN: The presentation was fine for the assignment - nice references and figures, though your results differ somewhat from what I got using the provided data. I suspect a bug in your code, though I have not found it.-->
+
+<!--**DAN: The code is very modular, and comments indicating how are much appreciated! Overall great job! 10/10-->
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
@@ -28,7 +36,7 @@ In this study, mean annual temperature and precipitation data from thousands of 
 
 ## Modularity 2: I made functions to make my code easier to follow, and more efficient, without having to copy and paste several sections of code. 
 
-
+#***DAN: pls indent code within coding constructs like functions
 DataMatrix <- function(data,na_thresh){
 # make list of all names, lats, and lons
 n <- unique(data [,c("name","lon","lat")])
@@ -62,7 +70,7 @@ return(list(dat_only=dat_only, latlist=new_latlist, lonlist=new_lonlist))
 }
 ```
 
-
+<!--**DAN: This function needs a few comments describing wnat it does and how to call it-->
 ```{r trend, echo=FALSE}
 Trend <- function(data) {
   yearlist <- colnames(data)
@@ -134,6 +142,7 @@ analyze <- function(datasets, titles) {
   for (f in seq_along(datasets)) {
     fdata <- datasets[f]
     fdata = data.frame(fdata)
+    #***DAN: the following three lines call the function three times, so this is inefficient
     new_data <- DataMatrix(fdata, na_thresh)$dat_only
     latlist <- DataMatrix(fdata,na_thresh)$latlist
     lonlist <- DataMatrix(fdata,na_thresh)$lonlist
